@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
             launch {
                 println("debug, coroutine start!") // 3
                 println("debug, ${fetch()}") // 4
+                val gitHub = fetch()
+                binding.nameTextView.text = gitHub.name
+                binding.loginTextView.text = gitHub.login
+                binding.locationTextView.text = gitHub.location
                 println("debug, coroutine end!") // 5
             }
         }
@@ -42,17 +46,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     // 中断するものにsuspendつける
-    suspend fun fetch(): String {
+    suspend fun fetch(): GitHubModel {
         val urlString = "https://api.github.com/users/tatsuya-ss"
         val (_, _, result) = urlString.httpGet().responseString()
         return when(result) {
             is Result.Failure -> {
-                result.getException().toString()
+                println(result.getException().toString())
+                return GitHubModel("不明", "不明", "不明")
             }
             is Result.Success -> {
                 val jsonResult = result.get()
                 var gitHub = Gson().fromJson(jsonResult, GitHubModel::class.java)
-                return gitHub.login
+                return gitHub
             }
         }
     }
