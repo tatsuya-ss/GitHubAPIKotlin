@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    private val gitHubUseCase = GitHubUseCaseImpl()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupBinding()
@@ -25,38 +27,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButton() {
         binding.button.setOnClickListener {
-            main()
+            didTapButton()
         }
     }
 
-    private fun main() {
+    private fun didTapButton() {
+
         GlobalScope.launch {
             launch {
-                val gitHub = fetch()
+                val gitHub = gitHubUseCase.fetch()
                 gitHub?.let {
+                    println("debug, fetch")
                     binding.nameTextView.text = gitHub.name
                     binding.loginTextView.text = gitHub.login
                     binding.locationTextView.text = gitHub.location
                 }
             }
         }
-    }
 
-    // 中断するものにsuspendつける
-    suspend fun fetch(): GitHub? {
-        val urlString = "https://api.github.com/users/tatsuya-ss"
-        val (_, _, result) = urlString.httpGet().responseString()
-        return when(result) {
-            is Result.Failure -> {
-                println(result.getException().toString())
-                return null
-            }
-            is Result.Success -> {
-                val jsonResult = result.get()
-                var gitHub = Gson().fromJson(jsonResult, GitHub::class.java)
-                return gitHub
-            }
-        }
     }
 
 }
