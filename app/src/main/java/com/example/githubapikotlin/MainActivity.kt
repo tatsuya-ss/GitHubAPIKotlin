@@ -5,6 +5,7 @@ import android.os.Bundle
 import com.example.githubapikotlin.databinding.ActivityMainBinding
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import com.google.gson.Gson
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch {
             launch {
                 println("debug, coroutine start!") // 3
-                print("debug, ${fetch()}") // 4
+                println("debug, ${fetch()}") // 4
                 println("debug, coroutine end!") // 5
             }
         }
@@ -49,8 +50,14 @@ class MainActivity : AppCompatActivity() {
                 result.getException().toString()
             }
             is Result.Success -> {
-                result.get()
+                val jsonResult = result.get()
+                var gitHub = Gson().fromJson(jsonResult, GitHubModel::class.java)
+                return gitHub.login
             }
         }
     }
 }
+
+data class GitHubModel(val login: String,
+                       val name: String,
+                       val location: String)
